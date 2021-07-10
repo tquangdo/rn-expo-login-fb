@@ -1,21 +1,20 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { createAppContainer } from 'react-navigation'; // phai co "yarn add react-native-gesture-handler"
+import { createStackNavigator } from 'react-navigation-stack';
+import Splash from './components/Splash';
+import Login from './components/Login';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+const AppNavigator = createStackNavigator({
+  //Screens   
+  Splash: {
+    screen: Splash
   },
-});
+  Login: {
+    screen: Login
+  },
+}, {
+  //settings
+  initialRouteName: 'Splash'
+})
+export default createAppContainer(AppNavigator)
+// HOC (Higher Order Component): bien AppNavigator thanh 1 container, trong do all states se -> props
+// components/Splash.js: this.props.navigation.navigate("Login")
