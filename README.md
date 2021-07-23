@@ -16,6 +16,10 @@ scan bar code on `expo go` appstore
 ### add SDK (just for react-native CLI )
 1. access "https://developers.facebook.com/quickstarts" > `ios` > choose `RNFBLogin`
 2. click "Download SDK"
+### install package
+- https://docs.expo.io/versions/latest/sdk/facebook/
+- `$expo install expo-facebook`
+- `components/Login.js: import * as Facebook from 'expo-facebook'`
 
 ## demos app
 ![demo](screenshots/demo.gif)
