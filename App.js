@@ -1,62 +1,83 @@
 import React, { Component } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-
-export default class StaggerComponent extends Component {
+import {
+  Animated,
+  PanResponder, StyleSheet, View
+} from 'react-native';
+export default class GestureComponent extends Component {
   constructor(props) {
     super(props);
-    let tmpAnimatedValues = [];
-    for (let i = 0; i < 1000; i++) {
-      tmpAnimatedValues.push(new Animated.Value(0));//We will have 1000 views for animations
-    }
     this.state = {
-      staAnimatedValues: tmpAnimatedValues
+      staPan: new Animated.ValueXY(),//staPan is a Vector, (x,y) = coordinators 
+      staScale: new Animated.Value(1)
     };
   }
-  componentDidMount() {
-    this._staggerAnimate();
-  }
-  _staggerAnimate = () => {
-    const tmpAnimations = this.state.staAnimatedValues.map((item_animated_value) => {
-      //Convert item_animated_value to Animate.timing
-      return Animated.timing(
-        item_animated_value,
-        {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: false,
-        }
-      )
+  UNSAFE_componentWillMount() {
+    const { staPan, staScale } = this.state
+    this._panResponder = PanResponder.create({
+      //Enable staPan gesture
+      onMoveShouldSetResponderCapture: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderGrant: (evt, gestureState) => {
+        //Start moving
+        staPan.setOffset({
+          x: staPan.x._value,
+          y: staPan.y._value
+        });
+        //staPan is a Vector. (x, y) = vector's coordinate
+        staPan.setValue({ x: 0, y: 0 });
+        Animated.spring(
+          staScale,
+          {
+            toValue: 2.3, friction: 3, useNativeDriver: false,
+          }
+        ).start();
+      },
+      onPanResponderMove: Animated.event([
+        //Moving
+        null, // raw event arg ignored
+        { dx: staPan.x, dy: staPan.y },//dx, dy is gestureState             
+      ],
+        { useNativeDriver: false }),
+      onPanResponderRelease: (evt, gestureState) => {
+        //Call when stop moving = "release your finger"
+        //Merges the offset value into the base value and resets the offset to zero
+        staPan.flattenOffset();
+        Animated.spring(
+          staScale,
+          {
+            toValue: 1, friction: 3, useNativeDriver: false,
+          }
+        ).start();
+      }
     });
-    Animated.stagger(10, tmpAnimations).start();//Animation1 start, after 10ms, Animation2 start, ...
   }
   render() {
-    const tmpAnimatedViews = this.state.staAnimatedValues.map((item_animated_value, index) => {
-      return <Animated.View
-        key={index}
-        style={[styles.animatedView, {
-          opacity: item_animated_value,
-          backgroundColor: index % 2 === 0 ? 'skyblue' : 'steelblue'
-        }]}
-      />
-    });
-    return (
-      <View style={styles.container}>
-        {tmpAnimatedViews}
-      </View>
-    );
+    const { staPan, staScale } = this.state
+    return (<View style={styles.container}>
+      <Animated.View style={[styles.animatedView,
+      {
+        transform: [
+          { translateX: staPan.x },
+          { translateY: staPan.y },
+          { scale: staScale },
+        ]
+      }]}
+        {...this._panResponder.panHandlers}
+      >
+      </Animated.View >
+    </View>)
   }
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',   //This automatically wrap next line of "circle's views"
     marginVertical: 40
   },
   animatedView: {
-    height: 12,
-    width: 12,
-    borderRadius: 6,
-    margin: 3
+    height: 50,
+    width: 50,
+    borderRadius: 50,
+    position: 'absolute',
+    backgroundColor: 'steelblue',
   }
-})
+});
